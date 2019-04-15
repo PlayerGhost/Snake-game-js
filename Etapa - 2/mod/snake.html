@@ -1,0 +1,342 @@
+<html>
+<body>
+
+<img src="sa.jpg" alt="Trulli" width="720" height="150">
+
+</body>
+</html>
+<canvas id="snake" width="720" height="720"></canvas>
+<script>
+/*
+   JavaScript Snake Game
+   Autor: Jan Bodnar
+   http://zetcode.com/javascript/snake/
+   Adaptado por: Mateus and Albero
+*/
+
+// Main
+
+var canvas;
+var ctx;
+
+var background;
+var head;
+var apple;
+var ball;
+var obstacle;
+
+var dots;
+var apple_x = [];
+var apple_y  = [];
+var appleCont = 0;
+var obstacle_x = [];
+var obstacle_y = [];
+var cont = 0;
+var life = 5;
+
+var moveDirection = Math.floor(Math.random() * 4);
+var leftDirection = false;
+var rightDirection = false;
+var upDirection = false;
+var downDirection = false;
+var inGame = true;
+var winTrigger = false;
+var loseTrigger = false;    
+
+const DOT_SIZE = 20;
+const MAX_RAND = 35.9;
+const DELAY = 80;
+const C_HEIGHT = 720;
+const C_WIDTH = 720;    
+
+const LEFT_KEY = 37;
+const RIGHT_KEY = 39;
+const UP_KEY = 38;
+const DOWN_KEY = 40;
+
+var x = [];
+var y = [];
+
+
+init();
+
+// Functions
+
+function init() {
+    canvas = document.getElementById("snake");
+    ctx = canvas.getContext("2d");
+
+    loadImages();
+    createSnake();
+    spawn();
+    locateApple();
+    locateObstacle();
+    setTimeout("gameCycle()", DELAY);
+    setTimeout(lose, 120000);
+}    
+
+function loadImages() {
+
+	background = new Image();
+    background.src = "background.png";
+
+    head = new Image();
+    head.src = "head.png";    
+    
+    ball = new Image();
+    ball.src = "dot.png"; 
+    
+    apple = new Image();
+    apple.src = "apple.png";
+
+    obstacle = new Image();
+    obstacle.src = "obstacle.png"; 
+}
+
+function createSnake() {
+    dots = 6;
+	
+    for (var z = 0; z < dots; z++){
+        x[z] = 60 - z * 10;
+        y[z] = 60; 
+    }
+}
+
+function locateApple() {
+    for (i = 0; i < 15; i++){
+        var r = Math.floor(Math.random() * MAX_RAND);
+        apple_x[i] = r * DOT_SIZE;
+
+        r = Math.floor(Math.random() * MAX_RAND);
+        apple_y[i] = r * DOT_SIZE;
+    }
+}
+
+function locateObstacle(){
+    for (i = 0; i < 10; i++){
+        var p = Math.floor(Math.random() * MAX_RAND);
+        obstacle_x[i] = p * DOT_SIZE;
+
+        p = Math.floor(Math.random() * MAX_RAND);
+        obstacle_y[i] = p * DOT_SIZE;
+    }   
+}
+
+function checkApple(){
+    for (i = 0; i < 15; i++){
+        if (cont >= 3)
+        {
+            life++;
+            cont = 0;
+        }
+            
+        if ((x[0] == apple_x[i]) && (y[0] == apple_y[i])) {
+        	appleCont++;
+            cont++;                   
+            apple_x[i] = 9999;
+            apple_y[i] = 9999;  
+        }
+    }
+}
+
+function checkObstacle(){
+    for (i = 0; i < 10; i++){
+        if ((x[0] == obstacle_x[i]) && (y[0] == obstacle_y[i])) {
+            life--;
+            obstacle_x[i] = 9998;
+            obstacle_y[i] = 9998;
+        }
+    }
+}
+
+function gameCycle() {
+    if (inGame) {
+        checkApple();
+        checkObstacle();
+        checkCollision();
+        move();
+        doDrawing();
+        setTimeout("gameCycle()", DELAY);
+    }
+}
+
+function checkCollision(){
+    
+    if (y[0] >= C_HEIGHT) {
+        y[0] = 0;
+    } 
+    if (y[0] < 0) {
+       y[0] =  C_HEIGHT;
+    }
+
+    if (x[0] >= C_WIDTH) {
+      x[0] = 0;
+    }
+
+    if (x[0] < 0) {
+      x[0] = C_WIDTH;
+    }
+}
+
+function spawn() {
+	if (moveDirection == 0){
+        leftDirection = true;
+    }
+
+    if (moveDirection == 1){
+        rightDirection = true;
+    }
+
+    if (moveDirection == 2){
+        upDirection = true;
+    }
+
+    if (moveDirection == 3){
+        downDirection = true;
+    }	
+}
+
+function move() {
+	for (var z = dots; z > 0; z--) {
+        x[z] = x[z-1];
+        y[z] = y[z-1];
+    }
+
+    if (leftDirection) {
+        x[0] -= DOT_SIZE;
+    }
+
+    if (rightDirection) {
+        x[0] += DOT_SIZE;
+    }
+
+    if (upDirection) {
+        y[0] -= DOT_SIZE;
+    }
+
+    if (downDirection) {
+        y[0] += DOT_SIZE;
+    }
+}    
+
+function doDrawing() {
+    ctx.clearRect(0, 0, C_WIDTH, C_HEIGHT);
+	ctx.fillRect(0, 0, C_WIDTH, C_HEIGHT);
+	ctx.drawImage(background, 0, 0);
+	
+    if (inGame) {
+    	
+        for (i = 0; i < 15; i++){
+            ctx.drawImage(apple, apple_x[i], apple_y[i]); 
+
+            if (obstacle_x[i] == apple_x[i] && obstacle_y[i] == apple_y[i]){
+            	obstacle_x[i] = 0;
+            	obstacle_y[i] = 0;
+                locateObstacle();
+            }  
+        }
+
+        for (i = 0; i < 10; i++){
+            ctx.drawImage(obstacle, obstacle_x[i], obstacle_y[i]);
+        }
+		
+        for (var z = 0; z < dots; z++) {
+
+            if (z == 0) {
+                ctx.drawImage(head, x[z], y[z]);
+            } else {
+                ctx.drawImage(ball, x[z], y[z]);
+            }
+        }    
+    }
+
+    if (appleCont == 1){
+    	winTrigger = true;
+    }
+
+    if (life == 4){
+    	loseTrigger = true;
+    }
+
+    if (winTrigger){
+    	inGame = false;
+        win();
+    }
+
+    if (loseTrigger){
+    	inGame = false;
+        lose();
+    }            
+}
+
+
+
+console.log(appleCont);
+console.log(inGame);
+console.log(winTrigger);
+console.log(loseTrigger);
+console.log(life);
+console.log(obstacle_x, obstacle_y);
+console.log(apple_x, apple_y);
+
+
+
+function win() {
+	ctx.drawImage(background, 0, 0);
+    ctx.fillStyle = "black";
+    ctx.textBaseline = "middle"; 
+    ctx.textAlign = "center"; 
+    ctx.font = "small-caps lighter 50px Helvetica";
+    ctx.fillText("Parabéns, você ganhou!", C_WIDTH/2, C_HEIGHT/2);
+}
+
+function lose() {
+	inGame = false;
+	ctx.drawImage(background, 0, 0);
+	ctx.fillStyle = "black";
+    ctx.textBaseline = "middle"; 
+    ctx.textAlign = "center"; 
+    ctx.font = "small-caps lighter 25px Helvetica";
+    ctx.fillText("Você perdeu :(, recarregue a página e tente novamenete.", C_WIDTH/2, C_HEIGHT/2);
+}
+
+onkeydown = function(e) {
+    var key = e.keyCode;
+
+    if ((key == LEFT_KEY) && (!rightDirection)) {
+        leftDirection = true;
+        upDirection = false;
+        downDirection = false;
+    }
+
+    if ((key == RIGHT_KEY) && (!leftDirection)) {
+        rightDirection = true;
+        upDirection = false;
+        downDirection = false;
+    }
+
+    if ((key == UP_KEY) && (!downDirection)) {
+        upDirection = true;
+        rightDirection = false;
+        leftDirection = false;
+    }
+
+    if ((key == DOWN_KEY) && (!upDirection)) {
+        downDirection = true;
+        rightDirection = false;
+        leftDirection = false;
+    }        
+};    
+</script>
+
+<html>
+<body>
+
+<iframe src="oxe.mp3" allow="autoplay" id="oxe" style="display:none"></iframe>
+
+<audio id="player" autoplay loop>
+  <source src="oxe.mp3" type="oxe.mp3">
+</audio>
+
+</body>
+</html>
