@@ -1,17 +1,28 @@
+<!DOCTYPE html>
 <html>
-<body>
 
 <img src="sa.jpg" alt="Trulli" width="720" height="150">
 
-</body>
-</html>
+<div id="box_score">
+	<h2> <span id="output"> 0 </span>&nbsp;Vidas </h2>
+	<h2> <span id="output1"> 0 </span>&nbsp;Tempo </h2>
+</div>
+
+<iframe src="oxe.mp3" allow="autoplay" id="oxe" style="display:none"></iframe>
+
+<audio id="player" autoplay loop>
+  <source src="oxe.mp3" type="oxe.mp3">
+</audio>
+
 <canvas id="snake" width="720" height="720"></canvas>
+
+<body>
 <script>
 /*
    JavaScript Snake Game
-   Autor: Jan Bodnar
+   Author: Jan Bodnar
    http://zetcode.com/javascript/snake/
-   Adaptado por: Mateus and Albero
+   Modified by: Italo "Player Ghost" and Mateus "Mathew"
 */
 
 // Main
@@ -41,11 +52,12 @@ var upDirection = false;
 var downDirection = false;
 var inGame = true;
 var winTrigger = false;
-var loseTrigger = false;    
+var loseTrigger = false;
+var time = 60;    
 
 const DOT_SIZE = 20;
 const MAX_RAND = 35.9;
-const DELAY = 80;
+const DELAY = 100;
 const C_HEIGHT = 720;
 const C_WIDTH = 720;    
 
@@ -72,7 +84,6 @@ function init() {
     locateApple();
     locateObstacle();
     setTimeout("gameCycle()", DELAY);
-    setTimeout(lose, 120000);
 }    
 
 function loadImages() {
@@ -125,9 +136,11 @@ function locateObstacle(){
 function checkApple(){
     for (i = 0; i < 15; i++){
         if (cont >= 3)
-        {
+        {	
+        	dots++;
             life++;
             cont = 0;
+            hud();
         }
             
         if ((x[0] == apple_x[i]) && (y[0] == apple_y[i])) {
@@ -143,11 +156,15 @@ function checkObstacle(){
     for (i = 0; i < 10; i++){
         if ((x[0] == obstacle_x[i]) && (y[0] == obstacle_y[i])) {
             life--;
+            dots--;
             obstacle_x[i] = 9998;
             obstacle_y[i] = 9998;
+            hud();
         }
     }
 }
+
+
 
 function gameCycle() {
     if (inGame) {
@@ -157,8 +174,19 @@ function gameCycle() {
         move();
         doDrawing();
         setTimeout("gameCycle()", DELAY);
+        time = time - 0.075;
+    	hud();
     }
 }
+
+function hud(){
+	var v1 = life;
+	var v2 = Math.trunc(time);
+	document.getElementById('output').innerHTML = v1;
+	document.getElementById('output1').innerHTML = v2;
+}
+
+hud();
 
 function checkCollision(){
     
@@ -250,11 +278,15 @@ function doDrawing() {
         }    
     }
 
-    if (appleCont == 1){
+    if (appleCont == 15){
     	winTrigger = true;
     }
 
-    if (life == 4){
+    if (life == 0){
+    	loseTrigger = true;
+    }
+
+    if (time <= 0){
     	loseTrigger = true;
     }
 
@@ -269,35 +301,22 @@ function doDrawing() {
     }            
 }
 
-
-
-console.log(appleCont);
-console.log(inGame);
-console.log(winTrigger);
-console.log(loseTrigger);
-console.log(life);
-console.log(obstacle_x, obstacle_y);
-console.log(apple_x, apple_y);
-
-
-
 function win() {
 	ctx.drawImage(background, 0, 0);
-    ctx.fillStyle = "black";
+    ctx.fillStyle = "#FEF900";
     ctx.textBaseline = "middle"; 
     ctx.textAlign = "center"; 
-    ctx.font = "small-caps lighter 50px Helvetica";
+    ctx.font = "900 50px Helvetica";
     ctx.fillText("Parabéns, você ganhou!", C_WIDTH/2, C_HEIGHT/2);
 }
 
 function lose() {
-	inGame = false;
 	ctx.drawImage(background, 0, 0);
-	ctx.fillStyle = "black";
+	ctx.fillStyle = "#FEF900";
     ctx.textBaseline = "middle"; 
     ctx.textAlign = "center"; 
-    ctx.font = "small-caps lighter 25px Helvetica";
-    ctx.fillText("Você perdeu :(, recarregue a página e tente novamenete.", C_WIDTH/2, C_HEIGHT/2);
+    ctx.font = "900 50px Arial";
+    ctx.fillText("Você perdeu :(", C_WIDTH/2, C_HEIGHT/2);
 }
 
 onkeydown = function(e) {
@@ -326,17 +345,7 @@ onkeydown = function(e) {
         rightDirection = false;
         leftDirection = false;
     }        
-};    
+};
 </script>
-
-<html>
-<body>
-
-<iframe src="oxe.mp3" allow="autoplay" id="oxe" style="display:none"></iframe>
-
-<audio id="player" autoplay loop>
-  <source src="oxe.mp3" type="oxe.mp3">
-</audio>
-
 </body>
 </html>
